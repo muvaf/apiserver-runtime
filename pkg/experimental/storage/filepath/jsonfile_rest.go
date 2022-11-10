@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -336,7 +337,10 @@ func ensureDir(dirname string) error {
 }
 
 func visitDir(dirname string, newFunc func() runtime.Object, codec runtime.Decoder, visitFunc func(string, runtime.Object)) error {
-	return filepath.Walk(dirname, func(path string, info os.FileInfo, err error) error {
+	return filepath.WalkDir(dirname, func(path string, info fs.DirEntry, err error) error {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
 		if err != nil {
 			return err
 		}
